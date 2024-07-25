@@ -42,7 +42,9 @@ export default function Home() {
       body: JSON.stringify({ realFile: realFile, deepDakeFile: deepDakeFile }),
     })
       .then((res) => res.json())
-      .then((data) => {})
+      .then((data) => {
+        console.log(data);
+      })
       .catch((err) => {
         console.log(err);
       })
