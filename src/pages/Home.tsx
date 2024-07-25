@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, Button, Container, Flex, Image, Text } from "@mantine/core";
-
+import { useMediaQuery } from "@mantine/hooks";
+import { Notifications } from "@mantine/notifications";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import FileUpload from "../component/FileUpload";
 
 export default function Home() {
+  const matches = useMediaQuery("(min-width: 500px)");
   const [realFile, setRealFile] = useState();
   const [deepDakeFile, setDeepFakeFile] = useState();
   const [isProcessing, setIsProcessing] = useState<boolean | undefined>();
@@ -22,14 +24,19 @@ export default function Home() {
     const calculatedTime = Number(timeout + "000");
 
     console.log(calculatedTime);
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsProcessing(false);
-      sendData();
+      Notifications.show({
+        title: "Error",
+        message: "Something went wrong while sendind request!🤥",
+        color: "red",
+      });
+      await sendData();
     }, calculatedTime);
   }
 
-  function sendData() {
-    fetch("http://localhost:3000/detect-deepfake", {
+  async function sendData() {
+    await fetch("http://localhost:3000/detect-deepfake", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ realFile: realFile, deepDakeFile: deepDakeFile }),
@@ -38,7 +45,8 @@ export default function Home() {
       .then((data) => {})
       .catch((err) => {
         console.log(err);
-      });
+      })
+      .finally(() => {});
   }
 
   return (
@@ -58,7 +66,12 @@ export default function Home() {
       </Box>
       {/* maim  */}
       <Container w={"100%"} p={"xl"} mt={"xl"}>
-        <Flex w={"100%"} justify={"center"} gap={"lg"}>
+        <Flex
+          w={"100%"}
+          justify={"center"}
+          direction={!matches ? "column" : "row"}
+          gap={"lg"}
+        >
           <Box>
             {!realFile && (
               <>
@@ -91,7 +104,11 @@ export default function Home() {
               </>
             )}
             {deepDakeFile && (
-              <Image w={"500px"} fit="cover" src={deepDakeFile} />
+              <Image
+                w={!matches ? "200px" : "500px"}
+                fit="contain"
+                src={deepDakeFile}
+              />
             )}
           </Box>
         </Flex>
@@ -104,7 +121,7 @@ export default function Home() {
             loading={isProcessing}
             onClick={generate}
           >
-            Compare
+            Start Detecting
           </Button>
           <Button
             disabled={!realFile}
@@ -113,6 +130,7 @@ export default function Home() {
               setRealFile(undefined);
               setDeepFakeFile(undefined);
             }}
+            variant="outline"
           >
             Clear All
           </Button>
